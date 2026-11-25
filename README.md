@@ -1,8 +1,12 @@
 # Gemini AI Chatbot – ChatGPT-Style Local Web Application
 
-[Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white) [Flask](https://img.shields.io/badge/Flask-Web_Framework-black?style=for-the-badge&logo=flask&logoColor=white) [Google Gemini](https://img.shields.io/badge/Google-Gemini_API-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white) [JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?style=for-the-badge&logo=javascript&logoColor=black) [HTML5](https://img.shields.io/badge/HTML5-Markup-orange?style=for-the-badge&logo=html5&logoColor=white) [CSS3](https://img.shields.io/badge/CSS3-Styling-blue?style=for-the-badge&logo=css3&logoColor=white)
-
-[GitHub stars](https://img.shields.io/github/stars/banerjeeanushree7-gif/Chatbot?style=social) [GitHub forks](https://img.shields.io/github/forks/banerjeeanushree7-gif/Chatbot?style=social) [GitHub issues](https://img.shields.io/github/issues/banerjeeanushree7-gif/Chatbot) [GitHub last commit](https://img.shields.io/github/last-commit/banerjeeanushree7-gif/Chatbot) [GitHub repo size](https://img.shields.io/github/repo-size/banerjeeanushree7-gif/Chatbot) [GitHub top language](https://img.shields.io/github/languages/top/banerjeeanushree7-gif/Chatbot)
+![GitHub stars](https://img.shields.io/github/stars/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
+![GitHub forks](https://img.shields.io/github/forks/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
+![GitHub language count](https://img.shields.io/github/languages/count/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
+![GitHub top language](https://img.shields.io/github/languages/top/banerjeeanushree7-gif/Chatbot-clone-?style=for-the-badge)
 
 ---
 
