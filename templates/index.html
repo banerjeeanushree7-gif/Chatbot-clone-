@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <!-- Tailwind via CDN: no build step required to run this project -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { chatblack: { 50: '#1b1b1d' } } } } }
+    </script>
+    <!-- Markdown, sanitizer and code highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="shortcut icon" href="data:," />
+</head>
+
+<body class="bg-chatblack-50 text-white overflow-hidden">
+    <div class="flex h-[100dvh]">
+
+        <!-- Mobile backdrop for the sidebar -->
+        <div id="sidebarBackdrop" class="hidden fixed inset-0 bg-black/50 z-20 md:hidden"></div>
+
+        <!-- Sidebar -->
+        <div id="sidebar"
+            class="left bg-[#202123] w-[260px] shrink-0 flex flex-col fixed md:static inset-y-0 left-0 z-30 -translate-x-full md:translate-x-0 transition-transform duration-200">
+            <button id="newChatBtn"
+                class="w-[90%] py-2 mt-3 mb-2 px-4 space-x-2 border-white/30 border rounded-md flex mx-auto justify-start items-center hover:bg-white/10 text-sm">
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>New Chat</span>
+            </button>
+            <div class="px-3 pb-1">
+                <input id="searchInput" type="search" placeholder="Search chats" autocomplete="off"
+                    class="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm outline-none focus:border-white/30 placeholder-gray-500">
+            </div>
+            <div class="text-xs mx-4 my-2 text-gray-400">Chats</div>
+            <div id="noResults" class="hidden text-xs text-gray-500 px-4 py-2">No matching chats</div>
+            <div id="chatList" class="chats flex-1 overflow-y-auto flex flex-col items-center space-y-1 px-2">
+                {% for chat in chats %}
+                <div class="chat-item group w-full px-3 py-2 rounded-md hover:bg-white/10 cursor-pointer flex justify-between items-center text-sm truncate"
+                    data-id="{{ chat.id }}">
+                    <span class="chat-title truncate">{{ chat.title }}</span>
+                    <span class="flex shrink-0 items-center">
+                        <button class="rename-btn opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white ml-2"
+                            title="Rename" aria-label="Rename chat">✎</button>
+                        <button class="delete-btn opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 ml-2"
+                            title="Delete" aria-label="Delete chat" data-id="{{ chat.id }}">✕</button>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Main area -->
+        <div class="flex-1 min-w-0 flex flex-col relative">
+
+            <!-- Top bar: menu (mobile), model picker, About -->
+            <div class="flex items-center justify-between px-4 py-3 gap-2">
+                <div class="flex items-center gap-2">
+                    <button id="menuBtn" class="md:hidden p-2 rounded-md hover:bg-white/10" aria-label="Open menu">
+                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-5 w-5">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <select id="modelSelect"
+                        class="bg-gray-700 text-sm px-3 py-2 rounded-md outline-none hover:bg-gray-600 cursor-pointer">
+                        {% for m in models %}
+                        <option value="{{ m }}" {% if m == default_model %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button id="infoBtn"
+                    class="bg-gray-700 hover:bg-gray-600 text-sm px-3 py-2 rounded-md flex items-center space-x-1">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>About</span>
+                </button>
+            </div>
+            <div id="infoPanel"
+                class="hidden absolute top-16 right-4 z-20 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto bg-[#202123] border border-white/10 rounded-md shadow-xl p-4 text-sm">
+                <div class="font-semibold mb-2">Capabilities</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Remembers what you said earlier in the conversation</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Streams answers as they are written</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Formats code, lists and tables; copy and regenerate buttons</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Reads images, PDFs and text/code files you attach</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Edit a sent message to re-run from that point</div>
+                <div class="font-semibold mt-4 mb-2">Limitations</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">May occasionally generate incorrect information</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Limited knowledge of very recent events</div>
+                <div class="bg-gray-700 text-sm py-2 px-3 my-1 rounded-md">Can misunderstand ambiguous questions</div>
+            </div>
+
+            <!-- Welcome screen (shown when there's no active conversation) -->
+            <div id="welcomeScreen" class="flex-1 flex flex-col justify-center items-center overflow-y-auto px-4">
+                <div class="text-center w-full text-4xl font-bold mb-8">Chatbot</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                    <button class="suggestion text-left text-sm border border-white/15 rounded-lg px-4 py-3 hover:bg-white/10">Explain how recursion works with a simple Python example</button>
+                    <button class="suggestion text-left text-sm border border-white/15 rounded-lg px-4 py-3 hover:bg-white/10">Give me a 3-day study plan for learning SQL</button>
+                    <button class="suggestion text-left text-sm border border-white/15 rounded-lg px-4 py-3 hover:bg-white/10">Compare REST and GraphQL in a table</button>
+                    <button class="suggestion text-left text-sm border border-white/15 rounded-lg px-4 py-3 hover:bg-white/10">Help me write a polite email asking for an extension</button>
+                </div>
+            </div>
+
+            <!-- Chat thread (shown once a conversation has started) -->
+            <div id="chatScreen" class="hidden flex-1 flex flex-col overflow-hidden">
+                <div id="messages" class="flex-1 overflow-y-auto"></div>
+            </div>
+
+            <!-- Composer (shared by both screens) -->
+            <div class="w-full flex items-center justify-center flex-col pb-4 pt-2 bg-chatblack-50">
+                <div id="errorBanner" class="hidden text-red-300 text-sm mb-2 max-w-2xl text-center px-4"></div>
+                <div class="w-full max-w-2xl px-4">
+                    <div id="attachmentBar" class="hidden flex flex-wrap gap-2 mb-2"></div>
+                    <div class="relative">
+                        <input type="file" id="fileInput" multiple class="hidden"
+                            accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.java,.c,.cpp,.sql,.yaml,.yml,.xml,.log">
+                        <button id="attachButton" type="button" aria-label="Attach files" title="Attach images, PDFs or text files"
+                            class="absolute left-3 bottom-3 p-2 rounded-md text-white/70 hover:text-white hover:bg-white/10">
+                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-5 w-5">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                        </button>
+                        <textarea id="questionInput" rows="1" placeholder="Send a message"
+                            class="w-full p-4 pl-14 pr-14 bg-gray-700 rounded-md outline-none focus:ring-2 focus:ring-gray-400 resize-none max-h-[200px]"></textarea>
+                        <button id="sendButton" aria-label="Send"
+                            class="absolute right-3 bottom-3 p-2 rounded-md text-white/80 hover:text-white hover:bg-white/10">
+                            <svg id="sendIcon" stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
+                                class="h-5 w-5">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            <svg id="stopIcon" fill="currentColor" viewBox="0 0 24 24" class="h-5 w-5 hidden">
+                                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-xs py-2 opacity-60 text-center px-4">Responses are generated by Google Gemini and
+                    may be inaccurate. Enter to send, Shift+Enter for a new line.</div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>
